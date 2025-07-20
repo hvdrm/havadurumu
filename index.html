@@ -2,19 +2,10 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Hava Durumu</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --bg-light: #b6fbff;
-      --bg-dark: #1e1e1e;
-      --text-light: #333;
-      --text-dark: #fff;
-      --card-light: rgba(255, 255, 255, 0.25);
-      --card-dark: rgba(255, 255, 255, 0.05);
-    }
-
     * {
       box-sizing: border-box;
     }
@@ -23,18 +14,13 @@
       margin: 0;
       padding: 0;
       font-family: 'Poppins', sans-serif;
-      background: var(--bg-light);
-      color: var(--text-light);
+      background: #b6fbff;
+      color: #333;
       display: flex;
       flex-direction: column;
       align-items: center;
       min-height: 100vh;
-      transition: background 0.5s ease, color 0.5s ease;
-    }
-
-    body.dark-mode {
-      background: var(--bg-dark);
-      color: var(--text-dark);
+      transition: background-image 1s ease-in-out;
     }
 
     h1 {
@@ -56,7 +42,7 @@
     }
 
     button {
-      background: linear-gradient(to right, #4facfe, #00f2fe);
+      background: linear-gradient(to right, #fc466b, #3f5efb);
       color: white;
       cursor: pointer;
       transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -71,17 +57,12 @@
       margin-top: 30px;
       padding: 20px;
       border-radius: 15px;
-      background: var(--card-light);
+      background: rgba(255, 255, 255, 0.25);
       backdrop-filter: blur(10px);
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
       text-align: center;
       max-width: 90%;
       width: 400px;
-    }
-
-    body.dark-mode #sonuc,
-    body.dark-mode #tahmin {
-      background: var(--card-dark);
     }
 
     img {
@@ -107,24 +88,21 @@
       font-size: 14px;
     }
 
-    #map {
-      width: 90%;
-      height: 300px;
-      margin-top: 30px;
-      border-radius: 10px;
-      overflow: hidden;
+    #loading {
+      display: none;
+      font-size: 18px;
+      font-weight: bold;
+      margin-top: 20px;
     }
 
-    .toggle-darkmode {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      cursor: pointer;
-      font-size: 14px;
-      padding: 8px 12px;
-      border-radius: 6px;
-      background: #222;
-      color: white;
+    #harita {
+      margin-top: 20px;
+      width: 100%;
+      max-width: 400px;
+      height: 250px;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
 
     @media (max-width: 600px) {
@@ -138,32 +116,38 @@
       }
     }
   </style>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 </head>
 <body>
-  <button class="toggle-darkmode" onclick="toggleDarkMode()">🌙 Karanlık Mod</button>
   <h1>🌦️ Hava Durumu</h1>
 
   <input type="text" id="sehir" placeholder="Şehir girin" />
   <button onclick="havaDurumunuGetir()">Göster</button>
   <button onclick="konumlaGetir()">📍 Konumum</button>
 
+  <div id="loading">Yükleniyor...</div>
   <div id="sonuc"></div>
   <div id="tahmin"></div>
-  <div id="map"></div>
+  <div id="harita"></div>
 
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
     const apiKey = "ae49cf2d391e1c2f24a8cb3910ea3014";
-    let map;
 
-    function toggleDarkMode() {
-      document.body.classList.toggle('dark-mode');
+    function hissedilenEmoji(temp) {
+      if (temp >= 35) return "🥵";
+      if (temp >= 25) return "😎";
+      if (temp >= 15) return "🙂";
+      if (temp >= 5) return "🧥";
+      return "🥶";
     }
 
     async function havaDurumunuGetir(sehir = null, lat = null, lon = null) {
-      let urlHava, urlTahmin;
+      const loading = document.getElementById("loading");
+      loading.style.display = "block";
+      document.getElementById("sonuc").innerHTML = "";
+      document.getElementById("tahmin").innerHTML = "";
+      document.getElementById("harita").innerHTML = "";
 
+      let urlHava, urlTahmin;
       if (sehir) {
         urlHava = `https://api.openweathermap.org/data/2.5/weather?q=${sehir}&appid=${apiKey}&lang=tr&units=metric`;
         urlTahmin = `https://api.openweathermap.org/data/2.5/forecast?q=${sehir}&appid=${apiKey}&lang=tr&units=metric`;
@@ -182,22 +166,53 @@
 
         if (veri.cod === 200) {
           const iconUrl = `https://openweathermap.org/img/wn/${veri.weather[0].icon}@2x.png`;
+          const emoji = hissedilenEmoji(veri.main.feels_like);
+
+          const durum = veri.weather[0].main.toLowerCase();
+          let arkaPlan = "";
+
+          switch (durum) {
+            case "clear":
+              arkaPlan = "url('https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=1600&q=80')";
+              break;
+            case "clouds":
+              arkaPlan = "url('https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1600&q=80')";
+              break;
+            case "rain":
+            case "drizzle":
+              arkaPlan = "url('https://images.unsplash.com/photo-1504384764586-bb4cdc1707b0?auto=format&fit=crop&w=1600&q=80')";
+              break;
+            case "snow":
+              arkaPlan = "url('https://images.unsplash.com/photo-1608889175823-08b4a3ae774b?auto=format&fit=crop&w=1600&q=80')";
+              break;
+            case "mist":
+            case "fog":
+              arkaPlan = "url('https://images.unsplash.com/photo-1499346030926-9a72daac6c63?auto=format&fit=crop&w=1600&q=80')";
+              break;
+            case "thunderstorm":
+              arkaPlan = "url('https://images.unsplash.com/photo-1587191082333-6b8bcd59df38?auto=format&fit=crop&w=1600&q=80')";
+              break;
+            default:
+              arkaPlan = "url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1600&q=80')";
+          }
+
+          document.body.style.backgroundImage = arkaPlan;
+          document.body.style.backgroundSize = "cover";
+          document.body.style.backgroundPosition = "center";
 
           document.getElementById("sonuc").innerHTML = `
             <h2>${veri.name}, ${veri.sys.country}</h2>
             <img src="${iconUrl}" alt="hava durumu simgesi" />
             <p>${veri.weather[0].description}</p>
             <p>🌡️ Sıcaklık: ${veri.main.temp} °C</p>
-            <p>🥵 Hissedilen: ${veri.main.feels_like} °C</p>
+            <p>🤔 Hissedilen: ${veri.main.feels_like} °C ${emoji}</p>
             <p>💧 Nem: ${veri.main.humidity}%</p>
             <p>💨 Rüzgar: ${veri.wind.speed} m/s</p>
           `;
 
-          if (lat && lon) {
-            haritaGoster(lat, lon);
-          } else {
-            haritaGoster(veri.coord.lat, veri.coord.lon);
-          }
+          const haritaURL = `https://maps.google.com/maps?q=${veri.coord.lat},${veri.coord.lon}&hl=tr&z=12&output=embed`;
+          document.getElementById("harita").innerHTML = `<iframe width="100%" height="100%" src="${haritaURL}" frameborder="0"></iframe>`;
+
         } else {
           document.getElementById("sonuc").textContent = "Şehir bulunamadı.";
         }
@@ -227,6 +242,8 @@
 
       } catch (error) {
         document.getElementById("sonuc").textContent = "Bir hata oluştu.";
+      } finally {
+        loading.style.display = "none";
       }
     }
 
@@ -242,19 +259,6 @@
       } else {
         document.getElementById("sonuc").textContent = "Tarayıcınız konum desteği sunmuyor.";
       }
-    }
-
-    function haritaGoster(lat, lon) {
-      if (!map) {
-        map = L.map('map').setView([lat, lon], 10);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '&copy; OpenStreetMap katkıcıları'
-        }).addTo(map);
-      } else {
-        map.setView([lat, lon], 10);
-      }
-
-      L.marker([lat, lon]).addTo(map);
     }
   </script>
 </body>
