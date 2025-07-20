@@ -4,111 +4,257 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Hava Durumu</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet">
   <style>
-    body {
-      font-family: 'Roboto', sans-serif;
-      background: linear-gradient(to right, #74ebd5, #ACB6E5);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
+    :root {
+      --bg-light: #b6fbff;
+      --bg-dark: #1e1e1e;
+      --text-light: #333;
+      --text-dark: #fff;
+      --card-light: rgba(255, 255, 255, 0.25);
+      --card-dark: rgba(255, 255, 255, 0.05);
     }
 
-    .container {
-      background: white;
-      padding: 30px;
-      border-radius: 15px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-      text-align: center;
-      max-width: 400px;
-      width: 90%;
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg-light);
+      color: var(--text-light);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      transition: background 0.5s ease, color 0.5s ease;
+    }
+
+    body.dark-mode {
+      background: var(--bg-dark);
+      color: var(--text-dark);
     }
 
     h1 {
-      color: #333;
-      margin-bottom: 20px;
+      margin-top: 40px;
+      font-weight: 600;
+    }
+
+    input, button {
+      padding: 12px 15px;
+      border: none;
+      border-radius: 10px;
+      margin: 5px;
+      font-size: 16px;
+      font-family: inherit;
     }
 
     input {
-      padding: 10px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      width: 100%;
-      margin-bottom: 15px;
-      font-size: 16px;
+      width: 200px;
     }
 
     button {
-      padding: 10px 20px;
-      border: none;
-      border-radius: 8px;
-      background-color: #0077cc;
+      background: linear-gradient(to right, #4facfe, #00f2fe);
       color: white;
-      font-size: 16px;
       cursor: pointer;
-      margin: 5px;
-      transition: background-color 0.3s ease;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
     button:hover {
-      background-color: #005fa3;
+      transform: scale(1.05);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
     }
 
-    #sonuc {
-      margin-top: 20px;
-      font-size: 18px;
-      color: #222;
+    #sonuc, #tahmin {
+      margin-top: 30px;
+      padding: 20px;
+      border-radius: 15px;
+      background: var(--card-light);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      max-width: 90%;
+      width: 400px;
     }
 
-    @media (max-width: 500px) {
-      .container {
-        padding: 20px;
-      }
+    body.dark-mode #sonuc,
+    body.dark-mode #tahmin {
+      background: var(--card-dark);
+    }
 
-      h1 {
-        font-size: 22px;
-      }
+    img {
+      width: 80px;
+    }
 
-      button {
+    .tahminKart {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.2);
+      margin: 10px;
+      padding: 15px;
+      border-radius: 12px;
+      width: 120px;
+      transition: transform 0.2s ease;
+    }
+
+    .tahminKart:hover {
+      transform: scale(1.05);
+    }
+
+    .tahminKart p {
+      margin: 5px 0;
+      font-size: 14px;
+    }
+
+    #map {
+      width: 90%;
+      height: 300px;
+      margin-top: 30px;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .toggle-darkmode {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      background: #222;
+      color: white;
+    }
+
+    @media (max-width: 600px) {
+      input {
         width: 100%;
+      }
+
+      .tahminKart {
+        width: 100px;
+        margin: 5px;
       }
     }
   </style>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
 </head>
 <body>
-  <div class="container">
-    <h1>Hava Durumu</h1>
-    <input type="text" id="sehir" placeholder="Şehir adı girin" />
-    <br />
-    <button onclick="havaGetir()">Göster</button>
-    <button onclick="konumlaGetir()">Konumun</button>
-    <div id="sonuc"></div>
-  </div>
+  <button class="toggle-darkmode" onclick="toggleDarkMode()">🌙 Karanlık Mod</button>
+  <h1>🌦️ Hava Durumu</h1>
 
+  <input type="text" id="sehir" placeholder="Şehir girin" />
+  <button onclick="havaDurumunuGetir()">Göster</button>
+  <button onclick="konumlaGetir()">📍 Konumum</button>
+
+  <div id="sonuc"></div>
+  <div id="tahmin"></div>
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   <script>
-    const apikey = "ae49cf2d391e1c2f24a8cb3910ea3014"; // OpenWeatherMap API anahtarını eklemeyi unutma
+    const apiKey = "ae49cf2d391e1c2f24a8cb3910ea3014";
+    let map;
 
-    async function havaGetir() {
-      const sehir = document.getElementById("sehir").value;
-      const url = `https://api.openweathermap.org/data/2.5/weather?q=${sehir}&appid=${apikey}&lang=tr&units=metric`;
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+    }
 
-      const response = await fetch(url);
-      const data = await response.json();
-      document.getElementById("sonuc").innerHTML = `${data.name}: ${data.main.temp}°C, ${data.weather[0].description}`;
+    async function havaDurumunuGetir(sehir = null, lat = null, lon = null) {
+      let urlHava, urlTahmin;
+
+      if (sehir) {
+        urlHava = `https://api.openweathermap.org/data/2.5/weather?q=${sehir}&appid=${apiKey}&lang=tr&units=metric`;
+        urlTahmin = `https://api.openweathermap.org/data/2.5/forecast?q=${sehir}&appid=${apiKey}&lang=tr&units=metric`;
+      } else if (lat && lon) {
+        urlHava = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&lang=tr&units=metric`;
+        urlTahmin = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}&lang=tr&units=metric`;
+      } else {
+        const sehirInput = document.getElementById("sehir").value;
+        urlHava = `https://api.openweathermap.org/data/2.5/weather?q=${sehirInput}&appid=${apiKey}&lang=tr&units=metric`;
+        urlTahmin = `https://api.openweathermap.org/data/2.5/forecast?q=${sehirInput}&appid=${apiKey}&lang=tr&units=metric`;
+      }
+
+      try {
+        const yanit = await fetch(urlHava);
+        const veri = await yanit.json();
+
+        if (veri.cod === 200) {
+          const iconUrl = `https://openweathermap.org/img/wn/${veri.weather[0].icon}@2x.png`;
+
+          document.getElementById("sonuc").innerHTML = `
+            <h2>${veri.name}, ${veri.sys.country}</h2>
+            <img src="${iconUrl}" alt="hava durumu simgesi" />
+            <p>${veri.weather[0].description}</p>
+            <p>🌡️ Sıcaklık: ${veri.main.temp} °C</p>
+            <p>🥵 Hissedilen: ${veri.main.feels_like} °C</p>
+            <p>💧 Nem: ${veri.main.humidity}%</p>
+            <p>💨 Rüzgar: ${veri.wind.speed} m/s</p>
+          `;
+
+          if (lat && lon) {
+            haritaGoster(lat, lon);
+          } else {
+            haritaGoster(veri.coord.lat, veri.coord.lon);
+          }
+        } else {
+          document.getElementById("sonuc").textContent = "Şehir bulunamadı.";
+        }
+
+        const tahminYanit = await fetch(urlTahmin);
+        const tahminVeri = await tahminYanit.json();
+
+        const tahminHTML = tahminVeri.list.slice(0, 6).map(item => {
+          const tarih = new Date(item.dt_txt);
+          const saat = tarih.getHours();
+          const icon = `https://openweathermap.org/img/wn/${item.weather[0].icon}.png`;
+
+          return `
+            <div class="tahminKart">
+              <p>${tarih.toLocaleDateString("tr-TR")}<br>${saat}:00</p>
+              <img src="${icon}" />
+              <p>${item.main.temp} °C</p>
+              <p>${item.weather[0].description}</p>
+            </div>
+          `;
+        }).join("");
+
+        document.getElementById("tahmin").innerHTML = `
+          <h3>📅 Saatlik Tahmin</h3>
+          ${tahminHTML}
+        `;
+
+      } catch (error) {
+        document.getElementById("sonuc").textContent = "Bir hata oluştu.";
+      }
     }
 
     function konumlaGetir() {
-      navigator.geolocation.getCurrentPosition(async (konum) => {
-        const lat = konum.coords.latitude;
-        const lon = konum.coords.longitude;
-        const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apikey}&lang=tr&units=metric`;
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((konum) => {
+          const lat = konum.coords.latitude;
+          const lon = konum.coords.longitude;
+          havaDurumunuGetir(null, lat, lon);
+        }, () => {
+          document.getElementById("sonuc").textContent = "Konum bilgisi alınamadı.";
+        });
+      } else {
+        document.getElementById("sonuc").textContent = "Tarayıcınız konum desteği sunmuyor.";
+      }
+    }
 
-        const response = await fetch(url);
-        const data = await response.json();
-        document.getElementById("sonuc").innerHTML = `${data.name}: ${data.main.temp}°C, ${data.weather[0].description}`;
-      });
+    function haritaGoster(lat, lon) {
+      if (!map) {
+        map = L.map('map').setView([lat, lon], 10);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap katkıcıları'
+        }).addTo(map);
+      } else {
+        map.setView([lat, lon], 10);
+      }
+
+      L.marker([lat, lon]).addTo(map);
     }
   </script>
 </body>
