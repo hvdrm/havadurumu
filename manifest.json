@@ -1,0 +1,15 @@
+manifest.jsonmanifest.json{
+  "name": "Hava Durumu",
+  "short_name": "HavaDurumu",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#b6fbff",
+  "theme_color": "#4facfe",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}
