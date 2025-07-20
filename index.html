@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <title>Hava Durumu</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#4facfe" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icon-192.png" sizes="192x192" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet">
   <style>
     * {
@@ -42,7 +45,7 @@
     }
 
     button {
-      background: linear-gradient(to right, #fc466b, #3f5efb);
+      background: linear-gradient(to right, #4facfe, #00f2fe);
       color: white;
       cursor: pointer;
       transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -88,23 +91,6 @@
       font-size: 14px;
     }
 
-    #loading {
-      display: none;
-      font-size: 18px;
-      font-weight: bold;
-      margin-top: 20px;
-    }
-
-    #harita {
-      margin-top: 20px;
-      width: 100%;
-      max-width: 400px;
-      height: 250px;
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
-
     @media (max-width: 600px) {
       input {
         width: 100%;
@@ -124,30 +110,15 @@
   <button onclick="havaDurumunuGetir()">Göster</button>
   <button onclick="konumlaGetir()">📍 Konumum</button>
 
-  <div id="loading">Yükleniyor...</div>
   <div id="sonuc"></div>
   <div id="tahmin"></div>
-  <div id="harita"></div>
 
   <script>
     const apiKey = "ae49cf2d391e1c2f24a8cb3910ea3014";
 
-    function hissedilenEmoji(temp) {
-      if (temp >= 35) return "🥵";
-      if (temp >= 25) return "😎";
-      if (temp >= 15) return "🙂";
-      if (temp >= 5) return "🧥";
-      return "🥶";
-    }
-
     async function havaDurumunuGetir(sehir = null, lat = null, lon = null) {
-      const loading = document.getElementById("loading");
-      loading.style.display = "block";
-      document.getElementById("sonuc").innerHTML = "";
-      document.getElementById("tahmin").innerHTML = "";
-      document.getElementById("harita").innerHTML = "";
-
       let urlHava, urlTahmin;
+
       if (sehir) {
         urlHava = `https://api.openweathermap.org/data/2.5/weather?q=${sehir}&appid=${apiKey}&lang=tr&units=metric`;
         urlTahmin = `https://api.openweathermap.org/data/2.5/forecast?q=${sehir}&appid=${apiKey}&lang=tr&units=metric`;
@@ -166,8 +137,6 @@
 
         if (veri.cod === 200) {
           const iconUrl = `https://openweathermap.org/img/wn/${veri.weather[0].icon}@2x.png`;
-          const emoji = hissedilenEmoji(veri.main.feels_like);
-
           const durum = veri.weather[0].main.toLowerCase();
           let arkaPlan = "";
 
@@ -205,14 +174,10 @@
             <img src="${iconUrl}" alt="hava durumu simgesi" />
             <p>${veri.weather[0].description}</p>
             <p>🌡️ Sıcaklık: ${veri.main.temp} °C</p>
-            <p>🤔 Hissedilen: ${veri.main.feels_like} °C ${emoji}</p>
+            <p>🥵 Hissedilen: ${veri.main.feels_like} °C</p>
             <p>💧 Nem: ${veri.main.humidity}%</p>
             <p>💨 Rüzgar: ${veri.wind.speed} m/s</p>
           `;
-
-          const haritaURL = `https://maps.google.com/maps?q=${veri.coord.lat},${veri.coord.lon}&hl=tr&z=12&output=embed`;
-          document.getElementById("harita").innerHTML = `<iframe width="100%" height="100%" src="${haritaURL}" frameborder="0"></iframe>`;
-
         } else {
           document.getElementById("sonuc").textContent = "Şehir bulunamadı.";
         }
@@ -242,8 +207,6 @@
 
       } catch (error) {
         document.getElementById("sonuc").textContent = "Bir hata oluştu.";
-      } finally {
-        loading.style.display = "none";
       }
     }
 
@@ -259,6 +222,14 @@
       } else {
         document.getElementById("sonuc").textContent = "Tarayıcınız konum desteği sunmuyor.";
       }
+    }
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then(reg => console.log("SW registered"))
+          .catch(err => console.log("SW failed", err));
+      });
     }
   </script>
 </body>
