@@ -1,80 +1,176 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Hava Durumu</title>
-<meta name="theme-color" content="#4facfe"/>
-<meta property="og:title" content="Hava Durumu - Şehrine Göre Anlık Tahmin">
-<meta property="og:description" content="Anlık hava durumu tahmini. Hissedilen sıcaklık, rüzgar ve daha fazlası.">
-<meta property="og:image" content="https://i.imgur.com/UzK7L3P.png">
-<meta property="og:url" content="https://berkeewzz.github.io/havadurumu/">
-<meta name="twitter:card" content="summary_large_image">
-<link rel="manifest" href="manifest.json"/>
-<link rel="icon" href="icon-192.png" sizes="192x192"/>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet">
-<link
-  rel="stylesheet"
-  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-/>
-<style>
-  /* Temel stiller */
-  * { box-sizing: border-box; margin: 0; padding: 0;}
-  body {
-    font-family: 'Poppins',sans-serif;
-    display: flex; flex-direction: column; align-items: center;
-    min-height: 100vh; transition: background-image 1s ease, background-color .5s ease, color .5s ease;
-    background: #b6fbff; color: #333;
-  }
-  h1 { margin-top: 40px; font-weight:600;}
-  input, button { padding:12px 15px; border:none; border-radius:10px; margin:5px; font-size:16px; font-family:inherit;}
-  input { width:200px;}
-  .btn { background: linear-gradient(to right,#4facfe,#00f2fe); color:white; cursor:pointer; transition: transform .2s ease, box-shadow .2s ease;}
-  .btn:hover { transform:scale(1.05); box-shadow:0 4px 15px rgba(0,0,0,0.2);}
-  #sonuc, #tahmin, #harita { margin-top:30px; padding:20px; border-radius:15px; background:rgba(255,255,255,0.25);
-    backdrop-filter:blur(10px); box-shadow:0 8px 32px rgba(0,0,0,0.1); text-align:center; max-width:90%; width:400px;}
-  img.icon { width:80px;}
-  .tahminKart { display:inline-block; background:rgba(255,255,255,0.2); margin:10px;padding:15px;border-radius:12px; width:120px; transition:transform .2s;}
-  .tahminKart:hover { transform:scale(1.05);}
-  .tahminKart p { margin:5px 0; font-size:14px;}
-  @media(max-width:600px){
-    input{width:100%;}
-    .tahminKart{width:100px;margin:5px;}
-  }
-  /* Harita kapsayıcısı */
-  #harita { height:300px; width:400px; padding:0; }
-  @media(max-width:600px){ #harita{width:100%;}}
-  /* Karanlık mod */
-  .dark {
-    background: #1f2937!important;
-    color: #ddd!important;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta property="og:title" content="Hava Durumu - Şehrine Göre Anlık Tahmin">
+  <meta property="og:description" content="Anlık hava durumu tahmini. Hissedilen sıcaklık, rüzgar ve daha fazlası.">
+  <meta property="og:image" content="https://i.imgur.com/UzK7L3P.png">
+  <meta property="og:url" content="https://berkeewzz.github.io/havadurumu/">
+  <meta name="twitter:card" content="summary_large_image">
+  <title>Hava Durumu</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icon-192.png" sizes="192x192" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #0f172a;
+      color: #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      min-height: 100vh;
+      transition: background-color 0.4s ease, color 0.4s ease;
+      background-image: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1600&q=80');
+      background-size: cover;
+      background-position: center;
+    }
+    h1 { margin-top: 40px; font-weight: 600; text-align: center; }
+    input, button {
+      padding: 12px 15px;
+      border: none;
+      border-radius: 10px;
+      margin: 5px;
+      font-size: 16px;
+      font-family: inherit;
+    }
+    input {
+      width: 200px;
+      background-color: rgba(255, 255, 255, 0.1);
+      color: #e2e8f0;
+    }
+    button {
+      background: #3b82f6;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.2s ease;
+    }
+    button:hover {
+      background: #60a5fa;
+      transform: scale(1.05);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+    #sonuc, #tahmin {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      border-radius: 16px;
+      padding: 20px;
+      margin-top: 30px;
+      width: 90%;
+      max-width: 420px;
+      text-align: center;
+    }
+    img { width: 80px; }
+    .tahminKart {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(8px);
+      border-radius: 12px;
+      padding: 12px;
+      margin: 10px;
+      display: inline-block;
+      width: 120px;
+      color: #e2e8f0;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      transition: transform 0.3s ease;
+    }
+    .tahminKart:hover {
+      transform: scale(1.05);
+    }
+    .tahminKart p { margin: 5px 0; font-size: 14px; }
+    @media (max-width: 600px) {
+      input { width: 100%; }
+      .tahminKart { width: 100px; margin: 5px; }
+    }
+  </style>
 </head>
 <body>
   <h1>🌦️ Hava Durumu</h1>
-  <div>
-    <input type="text" id="sehir" placeholder="Şehir girin"/>
-    <button class="btn" onclick="havaDurumunuGetir()">Göster</button>
-    <button class="btn" onclick="konumlaGetir()">📍 Konumum</button>
-    <button class="btn" onclick="toggleDarkMode()" id="darkToggle">🌙</button>
-    <button class="btn" onclick="paylas()" id="shareBtn">📤 Paylaş</button>
-  </div>
+  <input type="text" id="sehir" placeholder="Şehir girin" />
+  <button onclick="havaDurumunuGetir()">Göster</button>
+  <button onclick="konumlaGetir()">📍 Konumum</button>
   <div id="sonuc"></div>
   <div id="tahmin"></div>
-  <div id="harita"></div>
-
-  <script
-    async src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
-  </script>
-  <script src="app.js"></script>
-  <!-- Google Analytics -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-XXXXXXX-X"></script>
   <script>
-    window.dataLayer = window.dataLayer||[];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js',new Date());
-    gtag('config','UA-XXXXXXX-X');
+    const apiKey = "ae49cf2d391e1c2f24a8cb3910ea3014";
+    async function havaDurumunuGetir(sehir = null, lat = null, lon = null) {
+      let urlHava, urlTahmin;
+      if (sehir) {
+        urlHava = `https://api.openweathermap.org/data/2.5/weather?q=${sehir}&appid=${apiKey}&lang=tr&units=metric`;
+        urlTahmin = `https://api.openweathermap.org/data/2.5/forecast?q=${sehir}&appid=${apiKey}&lang=tr&units=metric`;
+      } else if (lat && lon) {
+        urlHava = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&lang=tr&units=metric`;
+        urlTahmin = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}&lang=tr&units=metric`;
+      } else {
+        const sehirInput = document.getElementById("sehir").value;
+        urlHava = `https://api.openweathermap.org/data/2.5/weather?q=${sehirInput}&appid=${apiKey}&lang=tr&units=metric`;
+        urlTahmin = `https://api.openweathermap.org/data/2.5/forecast?q=${sehirInput}&appid=${apiKey}&lang=tr&units=metric`;
+      }
+      try {
+        const yanit = await fetch(urlHava);
+        const veri = await yanit.json();
+        if (veri.cod === 200) {
+          const iconUrl = `https://openweathermap.org/img/wn/${veri.weather[0].icon}@2x.png`;
+          document.getElementById("sonuc").innerHTML = `
+            <h2>${veri.name}, ${veri.sys.country}</h2>
+            <img src="${iconUrl}" alt="hava durumu simgesi" />
+            <p>${veri.weather[0].description}</p>
+            <p>🌡️ Sıcaklık: ${veri.main.temp} °C</p>
+            <p>🥵 Hissedilen: ${veri.main.feels_like} °C</p>
+            <p>💧 Nem: ${veri.main.humidity}%</p>
+            <p>💨 Rüzgar: ${veri.wind.speed} m/s</p>
+          `;
+        } else {
+          document.getElementById("sonuc").textContent = "Şehir bulunamadı.";
+        }
+        const tahminYanit = await fetch(urlTahmin);
+        const tahminVeri = await tahminYanit.json();
+        const tahminHTML = tahminVeri.list.slice(0, 6).map(item => {
+          const tarih = new Date(item.dt_txt);
+          const saat = tarih.getHours();
+          const icon = `https://openweathermap.org/img/wn/${item.weather[0].icon}.png`;
+          return `
+            <div class="tahminKart">
+              <p>${tarih.toLocaleDateString("tr-TR")}<br>${saat}:00</p>
+              <img src="${icon}" />
+              <p>${item.main.temp} °C</p>
+              <p>${item.weather[0].description}</p>
+            </div>
+          `;
+        }).join("");
+        document.getElementById("tahmin").innerHTML = `
+          <h3>📅 Saatlik Tahmin</h3>
+          ${tahminHTML}
+        `;
+      } catch (error) {
+        document.getElementById("sonuc").textContent = "Bir hata oluştu.";
+      }
+    }
+    function konumlaGetir() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((konum) => {
+          const lat = konum.coords.latitude;
+          const lon = konum.coords.longitude;
+          havaDurumunuGetir(null, lat, lon);
+        }, () => {
+          document.getElementById("sonuc").textContent = "Konum bilgisi alınamadı.";
+        });
+      } else {
+        document.getElementById("sonuc").textContent = "Tarayıcınız konum desteği sunmuyor.";
+      }
+    }
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then(reg => console.log("SW registered"))
+          .catch(err => console.log("SW failed", err));
+      });
+    }
   </script>
 </body>
 </html>
