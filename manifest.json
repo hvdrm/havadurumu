@@ -12,7 +12,7 @@ manifest.jsonmanifest.json{
       "type": "image/png"
     }
   ]
-}
+
 "icons": [
   {
     "src": "icon-192.png",
