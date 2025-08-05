@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hava Durumu</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>🌤️ Hava Durumu</h1>
+      <button id="toggle-theme">🌙</button>
+    </header>
+
+    <div class="search-container">
+      <input type="text" id="cityInput" placeholder="Şehir girin..." />
+      <button id="searchBtn">Ara</button>
+      <select id="unitSelect">
+        <option value="metric">°C</option>
+        <option value="imperial">°F</option>
+      </select>
+    </div>
+
+
+
+    <div id="weather" class="weather-card">
+      <h2 id="cityName"></h2>
+      <img id="icon" alt="Hava İkonu" />
+      <p id="description"></p>
+      <p id="temp"></p>
+      <p id="feels_like"></p>
+      <p id="wind"></p>
+      <p id="humidity"></p>
+    </div>
+</div>
+
+<div class="forecast-section">
+  <h2 class="forecast-title">5 Günlük Tahmin</h2>
+  <div id="forecast" class="forecast-container"></div>
+</div>
+
+
+
+
+  <script src="script.js"></script>
+</body>
+</html>
